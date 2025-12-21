@@ -18,7 +18,7 @@ st.caption("Upload transactions → get explainable risk alerts")
 # =========================================================
 # CONSTANTS
 # =========================================================
-MAX_ROWS = 5000_000
+MAX_ROWS = 750_000
 
 # =========================================================
 # PROCESSING PIPELINE
@@ -126,32 +126,7 @@ def process_transactions(df, simulation_mode=True):
 
     df["final_reasons"] = df.apply(build_reasons, axis=1)
 
-    # ---------- Weighted Risk Score ----------
-    df["risk_score_weighted"] = (
-        df["risk_amount"].astype(int) * 2.0 +        # High weight
-        df["risk_new_device"].astype(int) * 1.5 +    # Medium-high
-        df["risk_new_ip"].astype(int) * 1.0 +        # Medium
-        df["risk_location_change"].astype(int) * 2.0 + # High weight
-        df["risk_off_hour"].astype(int) * 0.5 +      # Low weight
-        df["risk_velocity_sim"].astype(int) * 2.5    # Very high weight
-    )
-    
-    # Anomaly threshold = 7 (targets ~5-10% anomaly rate)
-    # Anomaly threshold = 8 (targets ~3-5% anomaly rate)
-    df["final_is_anomalous"] = df["risk_score_weighted"] >= 7
-    
-    # ---------- Severity levels (based on weighted score) ----------
-    def get_severity(score):
-        if score >= 9:
-            return "Urgent"
-        elif score >= 8:
-            return "Critical"
-        elif score >= 7:
-            return "Anomalous"
-        else:
-            return "Normal"
-    
-    df["severity"] = df["risk_score_weighted"].apply(get_severity)
+    df["final_is_anomalous"] = df["final_risk_score"] >= (5 if simulation_mode else 4)
 
     return df
 
@@ -329,16 +304,8 @@ st.header("🚨 Flagged Transactions")
 
 flagged = data[data["final_is_anomalous"]][
     ["transaction_id", "sender_account", "timestamp",
-     "amount", "location", "risk_score_weighted", "severity", "final_reasons"]
+     "amount", "location", "final_risk_score", "final_reasons"]
 ]
-
-# Show severity breakdown
-severity_counts = flagged["severity"].value_counts()
-st.subheader("Severity Breakdown")
-sev_col1, sev_col2, sev_col3 = st.columns(3)
-sev_col1.metric("🔴 Urgent (9+)", severity_counts.get("Urgent", 0))
-sev_col2.metric("🟠 Critical (8.5+)", severity_counts.get("Critical", 0))
-sev_col3.metric("🟡 Anomalous (8+)", severity_counts.get("Anomalous", 0))
 
 st.dataframe(flagged, use_container_width=True, height=400)
 
