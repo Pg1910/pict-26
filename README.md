@@ -114,6 +114,14 @@ Swagger UI at http://localhost:8000/docs
 ### Usage
 
 1. Upload CSV via CLI or frontend
+   - To see all cli commands
+   ```powershell
+    bank-anomaly --help 
+   ```
+   - To update csv
+   ```powershell
+    bank-anomaly --csv <path to your csv file>
+   ```
 2. Transactions are processed and stored in MongoDB
 3. View results using analytics APIs:
    - /analytics/summary
