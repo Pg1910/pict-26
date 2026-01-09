@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bank-anomaly"
+version = "1.0.0"
+dependencies = [
+  "fastapi",
+  "uvicorn",
+  "pandas",
+  "scikit-learn",
+  "typer",
+  "pymongo",
+  "python-dotenv"
+]
+
+[tool.setuptools]
+packages = ["backend"]
+
+[project.scripts]
+bank-anomaly = "backend.cli:app"

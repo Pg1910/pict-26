@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from config.mongo import get_collection
+from backend.config.mongo import get_collection
 
 router = APIRouter()
 

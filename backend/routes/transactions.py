@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
-from config.mongo import get_collection
+from backend.config.mongo import get_collection
 
 router = APIRouter()
 
