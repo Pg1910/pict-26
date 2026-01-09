@@ -1,6 +1,6 @@
 # 🏦 Explainable Transaction Anomaly Monitoring System
 
-> A hackathon project for real-time banking fraud detection with full explainability
+> A hackathon project for explainable banking transaction anomaly detection with CLI and API support
 
 ---
 
@@ -12,7 +12,7 @@ Modern banking systems must **monitor transactions in real-time** to identify fr
 
 - **Fraud labels are rare, delayed, or noisy** — making supervised learning unreliable
 - **Models must be explainable** — banking regulations require transparency in decision-making
-- **Systems must work offline** and be **auditable** for compliance
+- **Systems must work offline** , support batch & CLI-based ingestion, and be auditable for compliance
 
 ---
 
@@ -24,14 +24,17 @@ We built an **explainable, rule-based transaction monitoring system** that:
 - ✅ **Explains why** each transaction is flagged with human-readable reasons
 - ✅ **Works even when user history is sparse** through smart feature engineering
 - ✅ **No black-box ML** — every decision is transparent and auditable
-- ✅ **Offline-capable** — runs in secure banking environments without external dependencies
+- ✅ **Supports** both CLI and frontend uploads
+- ✅ **Stores results** in MongoDB for analytics and auditability
 
 ### Key Features
-- Real-time transaction monitoring via Streamlit dashboard
-- Z-score based anomaly detection per account
+- CSV ingestion via CLI and FastAPI
+- Amount- and behavior-based anomaly detection
 - Device/IP/Location change tracking
 - Risk scoring with detailed explanations
 - CSV export of flagged transactions
+- Analytics APIs for dashboards
+
 
 ---
 
@@ -39,13 +42,28 @@ We built an **explainable, rule-based transaction monitoring system** that:
 
 ![System Flowchart](techfiesta_flowchart.png)
 
+```md
+CLI / Frontend
+      ↓
+FastAPI Upload Route
+      ↓
+Shared Ingestion Service
+      ↓
+Explainable Anomaly Engine
+      ↓
+MongoDB
+      ↓
+Analytics & Transaction APIs
+```
+
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Python 3.8+
-- pip (Python package manager)
+- MongoDB (local or remote)
+- pip
 
 ### Clone the Repository
 
@@ -76,23 +94,40 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install required packages
-pip install streamlit pandas
+pip install -e .
+
 ```
 
 ### Run the Application
 
 ```bash
 # Start the Streamlit dashboard
-streamlit run streamlit2.py
+uvicorn backend.main:app --reload
 ```
 
 The application will open in your browser at `http://localhost:8501`
+```bash
+API available at http://localhost:8000
+Swagger UI at http://localhost:8000/docs
+```
 
 ### Usage
 
-1. Upload your transaction CSV file (must include columns: `timestamp`, `sender_account`, `amount`, `device_hash`, `ip_address`, `location`)
-2. View real-time anomaly detection results
-3. Export flagged transactions for further analysis
+1. Upload CSV via CLI or frontend
+   - To see all cli commands
+   ```powershell
+    bank-anomaly --help 
+   ```
+   - To update csv
+   ```powershell
+    bank-anomaly --csv <path to your csv file>
+   ```
+2. Transactions are processed and stored in MongoDB
+3. View results using analytics APIs:
+   - /analytics/summary
+   - /transactions/flagged
+4. Download flagged transactions as CSV
+
 
 ---
 
@@ -100,12 +135,18 @@ The application will open in your browser at `http://localhost:8501`
 
 ```
 pict-26/
-├── streamlit2.py              # Main Streamlit application
-├── Banking_anomalies.ipynb    # Jupyter notebook for analysis
-├── final_transactions.csv     # Sample transaction data
-├── flagged_transactions.csv   # Output: flagged anomalies
-├── overview.txt               # Detailed system documentation
-└── sample_images_out/         # Sample output screenshots
+├── backend/
+│   ├── cli.py                # CLI entrypoint
+│   ├── main.py               # FastAPI application
+│   ├── routes/               # Upload, analytics, transactions
+│   ├── services/             # Shared ingestion & anomaly logic
+│   ├── config/               # MongoDB configuration
+│   └── __init__.py
+├── frontend/                 # React frontend (optional)
+├── pyproject.toml            # Packaging & CLI definition
+├── requirements.txt          # Dependencies
+└── sample_images_out/        # Sample output screenshots
+
 ```
 
 ---
